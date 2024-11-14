@@ -1,0 +1,105 @@
+# This is a basic ProFTPD configuration file rename it to
+# 'proftpd.conf' for actual use.  It establishes a single server
+# and a single anonymous login.  It assumes that you have a user/group
+# "nobody" and "ftp" for normal operation and anon.
+
+ServerName      "{{inventory_hostname}}"
+ServerType      standalone
+DefaultServer   on
+RequireValidShell       no
+SystemLog /var/log/proftpd/system.log
+TransferLog /var/log/proftpd/transfer.log
+TimeoutLinger 600
+PidFile                         /var/run/proftpd-sftp.pid
+
+# Port 21 is the standard FTP port.
+#Port    5022
+Port    2122
+
+# Umask 022 is a good standard umask to prevent new dirs and files
+# from being group and world writable.
+Umask   022
+
+# Use the session PID as part of the name
+HiddenStores .in. .%P
+
+# To prevent DoS attacks, set the maximum number of child processes
+# to 30.  If you need to allow more than 30 concurrent connections
+# at once, simply increase this value.  Note that this ONLY works
+# in standalone mode, in inetd mode you should use an inetd server
+# that allows you to limit maximum number of processes per service
+# (such as xinetd).
+#MaxInstances    400
+MaxInstances    2000
+
+# Set the user and group under which the server will run.
+User    ftpusers
+Group   ftpusers
+
+# To cause every FTP user to be "jailed" (chrooted) into their home
+# directory, uncomment this line.
+DefaultRoot ~
+
+# Normally, we want files to be overwriteable.
+AllowOverwrite  on
+
+UseReverseDNS off
+
+# Bar use of SITE CHMOD by default
+<Limit SITE_CHMOD>
+  DenyAll
+</Limit>
+
+AuthOrder mod_auth_file.c
+AuthUserFile /ftp-data/etc/ftpd.passwd
+
+AllowRetrieveRestart on
+AllowStoreRestart on
+
+##
+## SFTP Specific Config
+SFTPEngine      On
+
+SFTPDigests hmac-sha1 hmac-sha2-256 hmac-sha2-512 hmac-ripemd160 umac-64@openssh.com umac-128@openssh.com
+SFTPCiphers aes128-ctr aes192-ctr aes256-ctr
+SFTPHostKey /opt/proftpd/etc/ssh_host_rsa_key
+#SFTPHostKey /opt/proftpd/etc/ssh_host_dsa_key
+
+# General fixes for mod_sftp
+SFTPClientMatch "WS_FTP" channelWindowSize 1GB
+SFTPClientMatch "WeOnlyDo" channelWindowSize 256MB
+SFTPClientMatch ".*Tumbleweed.*" channelWindowSize 256MB
+SFTPClientMatch ".*J2SSH_Maverick_*.*__Axway.*" channelWindowSize 256MB
+SFTPClientMatch ".*WinSCP.*" sftpProtocolVersion 4
+SFTPClientMatch ".*ClientSftp" sftpProtocolVersion 3
+# SecureBlackbox (SSH-2.0-SecureBlackbox.7)
+# http://www.eldos.com/sbb/download-release.php
+SFTPClientMatch ".*SecureBlackbox.*" sftpProtocolVersion 3
+# enable for sftp debugging:
+SFTPAuthorizedUserKeys file:/ftp-data/etc/authorized_keys/%u
+SFTPRekey none
+## End SFTP Config
+##
+
+<Global>
+
+PathDenyFilter "(\\.htaccess)$"
+ListOptions "+a"
+HiddenStores on
+
+</Global>
+
+<Directory />
+  HideFiles ^\.htaccess
+  <Limit DUP CWD LIST MDTM MLSD MLST NLST PWD RNFR STAT XCUP XCWD XPWD PROT>
+        AllowAll
+  </Limit>
+
+  <Limit ALL>
+        IgnoreHidden On
+        DenyUser monitor
+  </Limit>
+
+</Directory>
+
+SFTPOptions IgnoreSFTPUploadPerms

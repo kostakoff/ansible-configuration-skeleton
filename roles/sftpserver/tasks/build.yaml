@@ -1,0 +1,28 @@
+- name: Install dependancies for proftpd build
+  become: yes
+  ansible.builtin.dnf:
+    name: 
+      - openssl-devel
+    state: present
+
+- name: Download and extract sources to temp dir
+  ansible.builtin.unarchive:
+    remote_src: true #important!
+    src: "{{ item }}"
+    dest: /tmp
+  with_items: "{{ proftpd_sources_urls }}"
+
+- name: Copy module mod_proxy_protocol to proftpd sources
+  ansible.builtin.copy:
+    remote_src: yes
+    src: /tmp/proftpd-mod_proxy_protocol-0.6/mod_proxy_protocol.c
+    dest: /tmp/proftpd-1.3.7f/modules/mod_proxy_protocol.c
+
+- name: Configure build scripts
+  ansible.builtin.shell:
+    cmd: ./configure --prefix=/opt/proftpd --enable-openssl --with-modules=mod_sftp:mod_proxy_protocol:mod_ifsession
+    chdir: /tmp/proftpd-1.3.7f
+
+- name: Build proftpd
+  make:
+    chdir: /tmp/proftpd-1.3.7f

@@ -1,0 +1,15 @@
+[Unit]
+Description = ProFTPD SFTP Server
+After = network.target nss-lookup.target local-fs.target remote-fs.target
+
+[Service]
+Type = forking
+Environment = PROFTPD_OPTIONS=
+EnvironmentFile = -/etc/sysconfig/proftpd
+ExecStart = /opt/proftpd/sbin/proftpd -c /opt/proftpd/etc/proftpd.conf
+ExecReload = /bin/kill -HUP $MAINPID
+
+
+[Install]
+WantedBy = multi-user.target
+

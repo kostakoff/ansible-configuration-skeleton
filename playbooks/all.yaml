@@ -1,0 +1,7 @@
+---
+- hosts: sftpservers
+  roles:
+  - role: sftpserver
+    tags: 
+      - sftpserver
+      - never

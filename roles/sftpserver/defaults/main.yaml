@@ -1,0 +1,3 @@
+proftpd_sources_urls: 
+  - "https://github.com/proftpd/proftpd/archive/refs/tags/v1.3.7f.tar.gz"
+  - "https://github.com/Castaglia/proftpd-mod_proxy_protocol/archive/refs/tags/v0.6.tar.gz"
