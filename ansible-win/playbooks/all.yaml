@@ -1,0 +1,7 @@
+---
+- hosts: windows
+  roles:
+  - role: ping
+    tags: 
+      - ping
+      - never

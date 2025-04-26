@@ -1,0 +1,4 @@
+---
+ansible_winrm_server_cert_validation: ignore
+ansible_connection: winrm
+ansible_become_method: runas
