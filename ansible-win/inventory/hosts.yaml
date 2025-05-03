@@ -1,3 +1,4 @@
 windows:
   hosts:
-    jk-w2.local:
+    jk-w1.lab.devltd.net:
+    jk-w2.lab.devltd.net:
